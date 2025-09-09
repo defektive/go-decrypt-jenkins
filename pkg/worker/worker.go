@@ -14,7 +14,7 @@ import (
 )
 
 // DefaultParse tries to decrypt a given xml file given the passed in decryption keys from the command line
-func DefaultParse() []Secret {
+func DefaultParse() []map[string]string {
 	var sbk []byte
 	if config.Secretbytesfile != "" {
 		sbk = jenkinscrypto.Initsecretbytesdecrypt(config.Secretbytesfile, config.Masterkeyfile)

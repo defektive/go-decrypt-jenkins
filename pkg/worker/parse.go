@@ -113,9 +113,9 @@ type Secret struct {
 }
 
 // Parsefile takes in key material, a file, and tries to decrypt values
-func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
+func Parsefile(k []byte, sbk []byte, credfile []byte) []map[string]string {
 
-	secrets := []Secret{}
+	secrets := []map[string]string{}
 
 	cf, err := ioutil.ReadAll(bytes.NewReader(credfile))
 	if err != nil {
@@ -142,9 +142,7 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
 				continue
 			}
 
-			secret := Secret{
-				Data: make(map[string]string),
-			}
+			secret := map[string]string{}
 
 			for tag, v := range elementinfo {
 				v = strings.TrimSpace(v)
@@ -161,26 +159,25 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
 
 				if tag == "apiToken" {
 					id, name := getidanduser(cf)
-					secret.Id = id
-					secret.Name = name
 					if id != "" {
 						fmt.Printf("id: %s\n", id)
+						secret["id"] = id
 					}
 					if name != "" {
 						fmt.Printf("name: %s\n", name)
+						secret["name"] = name
 					}
 				}
 
 				if tag == "passwordHash" {
 					id, name := getidanduser(cf)
-					secret.Id = id
-					secret.Name = name
-
 					if id != "" {
 						fmt.Printf("id: %s\n", id)
+						secret["id"] = id
 					}
 					if name != "" {
 						fmt.Printf("name: %s\n", name)
+						secret["name"] = name
 					}
 					fmt.Printf("%s: %s\n", tag, v)
 					continue
@@ -192,14 +189,12 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
 					continue
 				}
 
-				secret.Data[tag] = decrypted
+				secret[tag] = decrypted
 
 			}
 			if printseparator {
 				secrets = append(secrets, secret)
-				secret = Secret{
-					Data: make(map[string]string),
-				}
+				secret = map[string]string{}
 				fmt.Println("")
 				printseparator = false
 			}
