@@ -142,7 +142,9 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
 				continue
 			}
 
-			secret := Secret{}
+			secret := Secret{
+				Data: make(map[string]string),
+			}
 
 			for tag, v := range elementinfo {
 				v = strings.TrimSpace(v)
@@ -195,7 +197,9 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
 			}
 			if printseparator {
 				secrets = append(secrets, secret)
-				secret = Secret{}
+				secret = Secret{
+					Data: make(map[string]string),
+				}
 				fmt.Println("")
 				printseparator = false
 			}
