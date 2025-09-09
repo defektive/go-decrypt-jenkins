@@ -13,8 +13,8 @@ import (
 	"github.com/thesubtlety/go-decrypt-jenkins/pkg/jenkinscrypto"
 )
 
-//DefaultParse tries to decrypt a given xml file given the passed in decryption keys from the command line
-func DefaultParse() {
+// DefaultParse tries to decrypt a given xml file given the passed in decryption keys from the command line
+func DefaultParse() []Secret {
 	var sbk []byte
 	if config.Secretbytesfile != "" {
 		sbk = jenkinscrypto.Initsecretbytesdecrypt(config.Secretbytesfile, config.Masterkeyfile)
@@ -24,12 +24,12 @@ func DefaultParse() {
 	f, err := ioutil.ReadFile(config.Credfile)
 	if err != nil {
 		fmt.Println("Unable to read file", err)
-		return
+		return nil
 	}
-	Parsefile(k, sbk, f)
+	return Parsefile(k, sbk, f)
 }
 
-//Brute takes a given a file and a key, regex parse {.+} and try to decrypt values
+// Brute takes a given a file and a key, regex parse {.+} and try to decrypt values
 func Brute(k []byte) {
 
 	if config.Credfile == "" {
@@ -66,8 +66,8 @@ func Brute(k []byte) {
 	}
 }
 
-//Search reads the path found in config.Search dir, walks the dir for
-//xml files and tries to decrypt encrypted creds if key material is found
+// Search reads the path found in config.Search dir, walks the dir for
+// xml files and tries to decrypt encrypted creds if key material is found
 func Search() {
 	fmt.Println("Searching for files in", config.Searchdirectory)
 	if _, err := os.Stat(config.Searchdirectory); err != nil {

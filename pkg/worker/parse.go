@@ -94,12 +94,33 @@ func trydecrypt(k []byte, sbk []byte, tag string, val string) (string, error) {
 	}
 }
 
-//Parsefile takes in key material, a file, and tries to decrypt values
-func Parsefile(k []byte, sbk []byte, credfile []byte) {
+type Secret struct {
+	Id   string            `json:"id"`
+	Name string            `json:"name"`
+	Data map[string]string `json:"data"`
+	//Desc          string `json:"desc"`
+	//Type          string `json:"type"`
+	//AccessKey     string `json:"accessKey"`
+	//SecretKey     string `json:"secretKey"`
+	//Secret        string `json:"secret"`
+	//User          string `json:"user"`
+	//Password      string `json:"password"`
+	//SSHPrivateKey string `json:"sshPrivateKey"`
+	//SSHPassphrase string `json:"sshPassphrase"`
+	//Filename      string `json:"filename"`
+	//Scope         string `json:"scope"`
+	//SecretBytes   []byte `json:"secretBytes"`
+}
+
+// Parsefile takes in key material, a file, and tries to decrypt values
+func Parsefile(k []byte, sbk []byte, credfile []byte) []Secret {
+
+	secrets := []Secret{}
+
 	cf, err := ioutil.ReadAll(bytes.NewReader(credfile))
 	if err != nil {
 		fmt.Println("Unable to read file", err)
-		return
+		return secrets
 	}
 
 	//awful awful hack to get around only 1.0 being supported by etree
@@ -107,7 +128,7 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) {
 
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes([]byte(cfs)); err != nil {
-		return
+		return secrets
 	}
 
 	for _, plugin := range Plugins {
@@ -120,6 +141,8 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) {
 			if len(elementinfo) < 1 {
 				continue
 			}
+
+			secret := Secret{}
 
 			for tag, v := range elementinfo {
 				v = strings.TrimSpace(v)
@@ -136,6 +159,8 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) {
 
 				if tag == "apiToken" {
 					id, name := getidanduser(cf)
+					secret.Id = id
+					secret.Name = name
 					if id != "" {
 						fmt.Printf("id: %s\n", id)
 					}
@@ -146,6 +171,9 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) {
 
 				if tag == "passwordHash" {
 					id, name := getidanduser(cf)
+					secret.Id = id
+					secret.Name = name
+
 					if id != "" {
 						fmt.Printf("id: %s\n", id)
 					}
@@ -162,12 +190,17 @@ func Parsefile(k []byte, sbk []byte, credfile []byte) {
 					continue
 				}
 
-				fmt.Printf("%s: %s\n", tag, decrypted)
+				secret.Data[tag] = decrypted
+
 			}
 			if printseparator {
+				secrets = append(secrets, secret)
+				secret = Secret{}
 				fmt.Println("")
 				printseparator = false
 			}
 		}
 	}
+
+	return secrets
 }

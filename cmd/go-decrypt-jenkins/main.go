@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -43,7 +44,7 @@ func main() {
 	}
 
 	//exit if missing master, secret, credfile
-	if config.Masterkeyfile == "" || config.Credfile == "" && (config.Secretbytesfile == "" || config.Secretkeyfile == "" ) {
+	if config.Masterkeyfile == "" || config.Credfile == "" && (config.Secretbytesfile == "" || config.Secretkeyfile == "") {
 		usage()
 	}
 
@@ -62,5 +63,15 @@ func main() {
 	}
 
 	// default, try to decrypt the specified credfile given the cli options
-	worker.DefaultParse()
+	secrets := worker.DefaultParse()
+
+	b, err := json.MarshalIndent(secrets, "", "  ")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	err = os.WriteFile("secrets.json", b, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
